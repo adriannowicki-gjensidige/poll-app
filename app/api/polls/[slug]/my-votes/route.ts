@@ -5,8 +5,10 @@ import { prisma } from "@/lib/prisma";
 // Returns votes for the given voter
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
+  const { slug } = await params;
+
   try {
     const { searchParams } = new URL(request.url);
     const voterId = searchParams.get("voterId");
@@ -19,7 +21,7 @@ export async function GET(
     }
 
     const poll = await prisma.poll.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!poll) {

@@ -5,8 +5,10 @@ import { prisma } from "@/lib/prisma";
 // Upserts a vote for the given voter and question
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
+  const { slug } = await params;
+
   try {
     const body = await request.json();
     const { voterId, questionId, candidateId } = body;
@@ -19,7 +21,7 @@ export async function POST(
     }
 
     const poll = await prisma.poll.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!poll) {

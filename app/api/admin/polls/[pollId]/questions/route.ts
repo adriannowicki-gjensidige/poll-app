@@ -5,11 +5,13 @@ import { isAuthenticated } from "@/lib/auth";
 // POST /api/admin/polls/[pollId]/questions - Add question
 export async function POST(
   request: NextRequest,
-  { params }: { params: { pollId: string } }
+  { params }: { params: Promise<{ pollId: string }> }
 ) {
   if (!isAuthenticated()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { pollId } = await params;
 
   try {
     const body = await request.json();
@@ -24,13 +26,13 @@ export async function POST(
 
     // Get max sort order
     const lastQuestion = await prisma.question.findFirst({
-      where: { pollId: params.pollId },
+      where: { pollId },
       orderBy: { sortOrder: "desc" },
     });
 
     const question = await prisma.question.create({
       data: {
-        pollId: params.pollId,
+        pollId,
         text,
         sortOrder: (lastQuestion?.sortOrder ?? -1) + 1,
       },
@@ -49,11 +51,13 @@ export async function POST(
 // DELETE /api/admin/polls/[pollId]/questions - Delete question
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { pollId: string } }
+  { params }: { params: Promise<{ pollId: string }> }
 ) {
   if (!isAuthenticated()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  await params;
 
   try {
     const { searchParams } = new URL(request.url);

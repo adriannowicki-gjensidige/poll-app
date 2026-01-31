@@ -5,11 +5,13 @@ import { prisma } from "@/lib/prisma";
 // Creates a new voter for the poll if needed
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
+  const { slug } = await params;
+
   try {
     const poll = await prisma.poll.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!poll) {

@@ -5,15 +5,17 @@ import { isAuthenticated } from "@/lib/auth";
 // GET /api/admin/polls/[pollId]/results - Get voting results
 export async function GET(
   request: NextRequest,
-  { params }: { params: { pollId: string } }
+  { params }: { params: Promise<{ pollId: string }> }
 ) {
   if (!isAuthenticated()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { pollId } = await params;
+
   try {
     const poll = await prisma.poll.findUnique({
-      where: { id: params.pollId },
+      where: { id: pollId },
       include: {
         questions: { orderBy: { sortOrder: "asc" } },
         candidates: { orderBy: { displayName: "asc" } },
@@ -26,13 +28,13 @@ export async function GET(
 
     // Get total voters
     const totalVoters = await prisma.voter.count({
-      where: { pollId: params.pollId },
+      where: { pollId },
     });
 
     // Get vote counts grouped by question and candidate
     const voteCounts = await prisma.vote.groupBy({
       by: ["questionId", "candidateId"],
-      where: { pollId: params.pollId },
+      where: { pollId },
       _count: { id: true },
     });
 

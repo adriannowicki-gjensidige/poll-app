@@ -5,15 +5,17 @@ import { isAuthenticated } from "@/lib/auth";
 // GET /api/admin/polls/[pollId] - Get poll details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { pollId: string } }
+  { params }: { params: Promise<{ pollId: string }> }
 ) {
   if (!isAuthenticated()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { pollId } = await params;
+
   try {
     const poll = await prisma.poll.findUnique({
-      where: { id: params.pollId },
+      where: { id: pollId },
       include: {
         questions: { orderBy: { sortOrder: "asc" } },
         candidates: { orderBy: { displayName: "asc" } },
@@ -37,11 +39,13 @@ export async function GET(
 // PUT /api/admin/polls/[pollId] - Update poll
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { pollId: string } }
+  { params }: { params: Promise<{ pollId: string }> }
 ) {
   if (!isAuthenticated()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { pollId } = await params;
 
   try {
     const body = await request.json();
@@ -50,7 +54,7 @@ export async function PUT(
     // Check slug uniqueness if changed
     if (slug) {
       const existing = await prisma.poll.findFirst({
-        where: { slug, NOT: { id: params.pollId } },
+        where: { slug, NOT: { id: pollId } },
       });
       if (existing) {
         return NextResponse.json(
@@ -61,7 +65,7 @@ export async function PUT(
     }
 
     const poll = await prisma.poll.update({
-      where: { id: params.pollId },
+      where: { id: pollId },
       data: {
         ...(title && { title }),
         ...(slug && { slug }),
@@ -82,14 +86,16 @@ export async function PUT(
 // DELETE /api/admin/polls/[pollId] - Delete poll
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { pollId: string } }
+  { params }: { params: Promise<{ pollId: string }> }
 ) {
   if (!isAuthenticated()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { pollId } = await params;
+
   try {
-    await prisma.poll.delete({ where: { id: params.pollId } });
+    await prisma.poll.delete({ where: { id: pollId } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting poll:", error);

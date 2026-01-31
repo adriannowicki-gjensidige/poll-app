@@ -5,11 +5,13 @@ import { isAuthenticated } from "@/lib/auth";
 // POST /api/admin/polls/[pollId]/candidates - Add candidate
 export async function POST(
   request: NextRequest,
-  { params }: { params: { pollId: string } }
+  { params }: { params: Promise<{ pollId: string }> }
 ) {
   if (!isAuthenticated()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { pollId } = await params;
 
   try {
     const body = await request.json();
@@ -24,7 +26,7 @@ export async function POST(
 
     // Check uniqueness
     const existing = await prisma.candidate.findFirst({
-      where: { pollId: params.pollId, displayName },
+      where: { pollId, displayName },
     });
     if (existing) {
       return NextResponse.json(
@@ -35,7 +37,7 @@ export async function POST(
 
     const candidate = await prisma.candidate.create({
       data: {
-        pollId: params.pollId,
+        pollId,
         displayName,
       },
     });
@@ -53,11 +55,13 @@ export async function POST(
 // DELETE /api/admin/polls/[pollId]/candidates - Delete candidate
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { pollId: string } }
+  { params }: { params: Promise<{ pollId: string }> }
 ) {
   if (!isAuthenticated()) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  await params;
 
   try {
     const { searchParams } = new URL(request.url);
