@@ -8,6 +8,7 @@ import { QRCodeSVG } from "qrcode.react";
 interface Question {
   id: string;
   text: string;
+  description: string | null;
   sortOrder: number;
 }
 
@@ -39,6 +40,7 @@ export default function EditPollPage() {
   const [slug, setSlug] = useState("");
   const [status, setStatus] = useState("");
   const [newQuestion, setNewQuestion] = useState("");
+  const [newQuestionDesc, setNewQuestionDesc] = useState("");
   const [newCandidate, setNewCandidate] = useState("");
   const [showQR, setShowQR] = useState(false);
 
@@ -95,10 +97,11 @@ export default function EditPollPage() {
       const res = await fetch(`/api/admin/polls/${pollId}/questions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: newQuestion }),
+        body: JSON.stringify({ text: newQuestion, description: newQuestionDesc || null }),
       });
       if (res.ok) {
         setNewQuestion("");
+        setNewQuestionDesc("");
         fetchPoll();
       } else {
         const data = await res.json();
@@ -297,14 +300,19 @@ export default function EditPollPage() {
               {poll.questions.map((q, i) => (
                 <li
                   key={q.id}
-                  className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                  className="flex justify-between items-start p-3 bg-gray-50 rounded-lg"
                 >
-                  <span>
-                    {i + 1}. {q.text}
-                  </span>
+                  <div>
+                    <span className="font-medium">
+                      {i + 1}. {q.text}
+                    </span>
+                    {q.description && (
+                      <p className="text-sm text-gray-500 mt-1">{q.description}</p>
+                    )}
+                  </div>
                   <button
                     onClick={() => handleDeleteQuestion(q.id)}
-                    className="text-red-600 hover:text-red-700 text-sm"
+                    className="text-red-600 hover:text-red-700 text-sm ml-4"
                   >
                     Delete
                   </button>
@@ -312,19 +320,26 @@ export default function EditPollPage() {
               ))}
             </ul>
           )}
-          <form onSubmit={handleAddQuestion} className="flex gap-2">
+          <form onSubmit={handleAddQuestion} className="space-y-3">
             <input
               type="text"
               value={newQuestion}
               onChange={(e) => setNewQuestion(e.target.value)}
-              placeholder="Add a question..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              placeholder="Question title..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            />
+            <textarea
+              value={newQuestionDesc}
+              onChange={(e) => setNewQuestionDesc(e.target.value)}
+              placeholder="Description (optional) - explain what this question is about..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+              rows={2}
             />
             <button
               type="submit"
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
             >
-              Add
+              Add Question
             </button>
           </form>
         </div>

@@ -35,10 +35,11 @@ model Candidate {
 }
 
 model Question {
-  id        String   @id @default(uuid())
-  pollId    String   @map("poll_id")
-  text      String
-  sortOrder Int      @default(0) @map("sort_order")
+  id          String   @id @default(uuid())
+  pollId      String   @map("poll_id")
+  text        String
+  description String?
+  sortOrder   Int      @default(0) @map("sort_order")
   
   poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
   votes     Vote[]

@@ -11,6 +11,7 @@ interface Candidate {
 interface Question {
   id: string;
   text: string;
+  description: string | null;
   sortOrder: number;
 }
 
@@ -220,9 +221,13 @@ export default function PublicPollPage() {
               key={question.id}
               className="p-6 bg-white rounded-lg shadow-sm"
             >
-              <label className="block text-lg font-medium text-gray-900 mb-3">
+              <label className="block text-lg font-medium text-gray-900 mb-1">
                 {index + 1}. {question.text}
               </label>
+              {question.description && (
+                <p className="text-sm text-gray-500 mb-3">{question.description}</p>
+              )}
+              {!question.description && <div className="mb-3" />}
 
               {/* Searchable dropdown */}
               <div className="relative">

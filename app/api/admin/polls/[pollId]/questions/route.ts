@@ -15,7 +15,7 @@ export async function POST(
 
   try {
     const body = await request.json();
-    const { text } = body;
+    const { text, description } = body;
 
     if (!text) {
       return NextResponse.json(
@@ -34,6 +34,7 @@ export async function POST(
       data: {
         pollId,
         text,
+        description: description || null,
         sortOrder: (lastQuestion?.sortOrder ?? -1) + 1,
       },
     });
