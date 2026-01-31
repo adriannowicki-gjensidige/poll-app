@@ -4,7 +4,7 @@ import { isAuthenticated } from "@/lib/auth";
 
 // GET /api/admin/polls - List all polls
 export async function GET() {
-  if (!isAuthenticated()) {
+  if (!(await isAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -34,7 +34,7 @@ export async function GET() {
 
 // POST /api/admin/polls - Create a new poll
 export async function POST(request: Request) {
-  if (!isAuthenticated()) {
+  if (!(await isAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

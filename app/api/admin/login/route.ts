@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (password === adminPassword) {
-      setAdminSession();
+      await setAdminSession();
       return NextResponse.json({ success: true });
     }
 
