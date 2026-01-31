@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Poll {
+  id         String      @id @default(uuid())
+  title      String
+  slug       String      @unique
+  status     String      @default("open") // "open" or "closed"
+  createdAt  DateTime    @default(now()) @map("created_at")
+  
+  candidates Candidate[]
+  questions  Question[]
+  voters     Voter[]
+  votes      Vote[]
+
+  @@map("polls")
+}
+
+model Candidate {
+  id          String   @id @default(uuid())
+  pollId      String   @map("poll_id")
+  displayName String   @map("display_name")
+  
+  poll        Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes       Vote[]
+
+  @@unique([pollId, displayName])
+  @@map("candidates")
+}
+
+model Question {
+  id        String   @id @default(uuid())
+  pollId    String   @map("poll_id")
+  text      String
+  sortOrder Int      @default(0) @map("sort_order")
+  
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes     Vote[]
+
+  @@map("questions")
+}
+
+model Voter {
+  id        String   @id @default(uuid())
+  pollId    String   @map("poll_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes     Vote[]
+
+  @@map("voters")
+}
+
+model Vote {
+  id          String   @id @default(uuid())
+  pollId      String   @map("poll_id")
+  questionId  String   @map("question_id")
+  voterId     String   @map("voter_id")
+  candidateId String   @map("candidate_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  poll        Poll      @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  voter       Voter     @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, questionId, voterId])
+  @@map("votes")
+}
